@@ -1,0 +1,10 @@
+;(ocamllex lexer)
+;(menhir
+;  (flags --explain)
+;  (modules parser))
+
+(executable
+ (name commutable)
+ (libraries core menhirLib)
+ (preprocess
+  (pps ppx_jane)))
