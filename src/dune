@@ -5,6 +5,6 @@
 
 (executable
  (name commutable)
- (libraries core menhirLib)
+ (libraries core async menhirLib)
  (preprocess
   (pps ppx_jane)))

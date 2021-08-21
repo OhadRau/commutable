@@ -1,10 +1,13 @@
 open! Core
 
-module Ident = String_id.Make(struct
-  let module_name = "Ident"
-end)()
+module Ident =
+  String_id.Make
+    (struct
+      let module_name = "Ident"
+    end)
+    ()
 
-module Unique_counter = Unique_id.Int()
+module Unique_counter = Unique_id.Int ()
 
 module Expr = struct
   type t =
