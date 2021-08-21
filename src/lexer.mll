@@ -21,8 +21,6 @@ let int = '-'? ['0'-'9']+
 let id = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'' '-']*
 
 rule comment strbuf = parse
-  | eof
-    { EOF }
   | "/*"
     { Buffer.add_string strbuf "/*";
       let child = comment (Buffer.create 100) lexbuf in
@@ -72,7 +70,7 @@ and read = parse
   | ')'
     { RIGHT_PAREN }
   | id as id
-    { IDENT (Ident.of_string id) }
+    { IDENT (Ast.Ident.of_string id) }
   | eof
     { EOF }
   | _ as c
