@@ -1,15 +1,14 @@
 open! Core
 
-module Ident = struct
-  type t = private string
+module Ident = String_id.Make(struct
+  let module_name = "Ident"
+end)()
 
-  let of_string x = x
-  let to_string x = x
-end
+module Unique_counter = Unique_id.Int()
 
 module Expr = struct
   type t =
-    | Comment of string
+    | Comment of Unique_counter.t * string
     | Int of int
     | String of string
     | Ident of Ident.t
@@ -19,6 +18,16 @@ module Expr = struct
     | Reload
 end
 
+module Toplevel = struct
+  type t =
+    | Comment of Unique_counter.t * string
+    | Function of Ident.t * Ident.t list * Expr.t
+end
+
+module Program = struct
+  type t = Toplevel.t list
+end
+
 (* example:
 {[
   let comment = /* foo */;
@@ -26,12 +35,12 @@ end
   print(comment);
   reload
   --->
-  Let (Ident.of_string "comment", Comment " foo ",
+  Let (Ident.of_string "comment", Comment (Unique_counter.create(), " foo "),
     Let (Ident.of_string "_",
       Apply (
         Ident (Ident.of_string "+/="),
         Ident (Ident.of_string "comment"),
-        Comment " bar "),
+        Comment (Unique_counter.create (), " bar ")),
       Let (Ident.of_string "_",
         Apply (
           Ident (Ident.of_string "print"),
