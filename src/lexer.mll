@@ -20,33 +20,37 @@ let int = '-'? ['0'-'9']+
 
 let id = ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'' '-']*
 
-rule comment strbuf = parse
+rule comment comment_store position strbuf children = parse
   | "/*"
-    { Buffer.add_string strbuf "/*";
-      let child = comment (Buffer.create 100) lexbuf in
-      Buffer.add_string strbuf child;
+    { let child_position = Ast.Source_position.of_lexbuf lexbuf in
+      let child = comment comment_store child_position (Buffer.create 100) [] lexbuf in
+      let { Ast.Comment.contents; _ } = Option.value_exn (Ast.Comment_store.get comment_store ~id:child) in
+      Buffer.add_string strbuf "/*";
+      Buffer.add_string strbuf contents;
       Buffer.add_string strbuf "*/";
-      comment strbuf lexbuf }
-  | newline
+      comment comment_store position strbuf (child::children) lexbuf }
+  | newline as n
     { next_line lexbuf;
-      Buffer.add_char strbuf '\n';
-      comment strbuf lexbuf }
+      Buffer.add_string strbuf n;
+      comment comment_store position strbuf children lexbuf }
   | _ as c
     { Buffer.add_char strbuf c;
-      comment strbuf lexbuf }
+      comment comment_store position strbuf children lexbuf }
   | "*/"
-    { Buffer.contents strbuf }
+    { let comment = { Ast.Comment.position; contents = Buffer.contents strbuf; children } in
+      Ast.Comment_store.add comment_store ~comment }
 
-and read = parse
+and read comment_store = parse
   | white
-    { read lexbuf }
+    { read comment_store lexbuf }
   | newline
     { next_line lexbuf;
-      read lexbuf }
+      read comment_store lexbuf }
   | int as i
     { INT (int_of_string i) }
   | "/*"
-    { COMMENT (comment (Buffer.create 100) lexbuf) }
+    { let position = Ast.Source_position.of_lexbuf lexbuf in
+      COMMENT (comment comment_store position (Buffer.create 100) [] lexbuf) }
   | "fn"
     { FN }
   | "let"

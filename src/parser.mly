@@ -1,6 +1,6 @@
-%token <int>         INT
-%token <Ast.Ident.t> IDENT
-%token <string>      COMMENT
+%token <int>              INT
+%token <Ast.Ident.t>      IDENT
+%token <Ast.Comment_id.t> COMMENT
 
 %token FN LET IF THEN ELSE END
 %token EOF
@@ -28,7 +28,7 @@ toplevel:
   | FN; name = IDENT; LEFT_PAREN; p = params; RIGHT_PAREN; e = expr; END
     { Function (name, p, e) }
   | c = COMMENT
-    { Toplevel.Comment (Unique_counter.create (), c) }
+    { Toplevel.Comment c }
 ;
 
 params:
@@ -46,9 +46,11 @@ expr:
   | LET; id = IDENT; EQUAL; value = expr; SEMICOLON; body = expr
     { Let (id, value, body) }
   | c = COMMENT
-    { Expr.Comment (Unique_counter.create (), c) }
+    { Expr.Comment c }
   | i = INT
     { Int i }
+  | id = IDENT
+    { Ident id }
   | left = expr; SEMICOLON; right = expr
     { Let (Ident.of_string "_", left, right) }
 ;
