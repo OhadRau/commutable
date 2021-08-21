@@ -10,6 +10,12 @@ let replace ~comment_store ~comment_id ~contents =
   let comment = Comment_store.get comment_store ~id:comment_id |> Option.value_exn in
   let { Source_position.filename; offset; _ } = comment.position in
   let%bind file_contents = Reader.file_contents filename in
+  (* CR orau: after updating this comment, we'll need to update the position for every comment that comes after.
+     Alternatively, we could just re-parse the file & swap out the comment stores.
+     
+     Either way, this also leads to an interesting question: what happens if we insert a new comment into the text
+     of an existing comment? This would invalidate all the counters, so maybe we need to come up with a better way
+     to identify comments? *)
   let new_contents =
     String.substr_replace_first
       file_contents
