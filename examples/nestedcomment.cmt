@@ -1,0 +1,8 @@
+/* hello /* world */ */
+fn test(x)
+  /* another comment 
+     /* also it's kinda dumb that we need semicolons after comments! */
+  */;
+  let foo = (/* comments can't really be arbitrarily placed :( */; 5);
+  3
+end
